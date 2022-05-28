@@ -1,0 +1,158 @@
+## Point to Point
+'''... Description ...'''
+
+import gym
+import numpy as np
+
+import pybullet as p
+from ArmEnv.ents.arm import Arm
+from ArmEnv.ents.plane import Plane
+from ArmEnv.ents.goal import Goal
+#from univ_arm.resources.goal import Goal
+
+class PointToRandomPoint(gym.Env):
+    metadata = {'render_modes':['human']}
+
+    def __init__(self,gui=False,mode='T',record=False,T_sens = 200, V_sens=1, obs_mode = "J"):
+        self.mode = mode
+        self.record = record
+        self.obs_mode = obs_mode
+
+
+        # the ranges for action spaces was decided based on tinkering done in testing2.py
+        if(mode == 'T'):
+            print('TORQUE CONTROL')
+            self.action_space = gym.spaces.box.Box(
+                low = np.array([-1, -1, -1, -1, -1, -1,-1]),
+                high = np.array([1,  1,  1,  1,  1,  1, 1])
+            )
+        elif(mode == 'V'):
+            print("VELOCITY CONTROL")
+            self.action_space = gym.spaces.box.Box(
+                low = np.array([-1, -1, -1, -1, -1, -1,-1]),
+                high = np.array([1,  1,  1,  1,  1,  1, 1])
+            )
+        else:
+            self.action_space = gym.spaces.box.Box(
+                low = np.array([-5, -5, -5, -5, -5, -5,-5]),
+                high = np.array([5,  5,  5,  5,  5,  5, 5])
+            )
+        if obs_mode == "J":
+            self.observation_space = gym.spaces.box.Box(    #change later
+                low = np.array([-100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10]),
+                high = np.array([100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10])
+            )
+        elif obs_mode == "T":
+            self.observation_space = gym.spaces.box.Box(    #change later
+                low = np.array([-100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -10, -10, -10]),
+                high = np.array([100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  10,  10,  10])
+            )
+        elif obs_mode == "CT":
+            self.observation_space = gym.spaces.box.Box(    #change later
+                low = np.array([-10,-10,-10,-10,-10,-10]),
+                high = np.array([10, 10, 10, 10, 10, 10])
+            )
+
+
+        self.np_random, _ = gym.utils.seeding.np_random()
+        if gui:
+            self.client = p.connect(p.GUI)
+        else:
+            self.client = p.connect(p.DIRECT)
+
+        #p.setTimeStep(1/30, self.client)
+
+
+        ## SUBJECT TO CHANGE
+        self.timesteps = 0
+        self.max_timesteps = 8000
+        self.T_sens = T_sens
+        self.V_sens = V_sens
+        self.arm = None
+        #self.goal = None
+        #self.goal_box = None #named as such becoz the random coordinates are named goal here
+        self.done = False
+        #self.prev_dist_to_goal = None
+        self.rendered_image = None
+        self.render_rot_matrix = None
+        self.distance_from_gripper = 0
+        self.logging_id = 0
+        self.goal_position = []
+        self.reset()
+
+        
+
+    def step(self,action):
+        
+        self.timesteps += 1
+        for i in range(4):          #ADD THIS AS AN ARGUMENT TO ENV CONSTRUCTOR
+            self.arm.apply_action(action,self.mode,torque_sens=self.T_sens,vel_sens=self.V_sens)
+            p.stepSimulation()
+        arm_ob = self.arm.get_observation()
+        reward = 0  #initialize reward 0
+
+        #pos,_= p.getBasePositionAndOrientation(self.goal_box.box)
+        
+        eeloc = p.getLinkState(self.arm.arm,6)[0] # 6th link is end effector (probably)
+
+        reward = -1*np.linalg.norm(np.array(eeloc)-np.array(self.goal_position))
+        if ((-1*reward) < 0.0075):
+            reward = 0
+
+
+        if self.timesteps > self.max_timesteps:
+            self.done = True
+        
+        if self.obs_mode == "CT":
+            arm_ob = list(eeloc) + self.goal_position
+        elif self.obs_mode == "T":
+            arm_ob = arm_ob + self.goal_position
+
+            
+        return arm_ob, reward, self.done, dict()
+
+
+    def reset(self):
+        self.timesteps = 0
+        p.resetSimulation(self.client)
+        p.setGravity(0,0,-10)
+        # Reload Plane and Car
+        self.arm = Arm(self.client,)
+        Plane(self.client)
+        
+
+        # Set Random Goal   #this will not be used as position of goal is hardcoded in goal.py
+        x = (np.random.random()-0.5)*1.2
+        y = (np.random.random()*0.7)
+        z = (np.random.random()-0.5)*1.2
+        self.goal_position = [x, y, z]
+        self.done = False
+        Goal(self.client,self.goal_position)
+
+        #self.goal_box = Goal(self.client, self.goal)
+
+        arm_ob = self.arm.get_observation()
+        if self.obs_mode == "CT":
+            eeloc = p.getLinkState(self.arm.arm,6)[0]
+            arm_ob = list(eeloc) + self.goal_position
+        elif self.obs_mode == "T":
+            arm_ob = arm_ob + self.goal_position
+
+        #self.prev_dist_to_goal = math.sqrt(((car_ob[0] - self.goal[0])**2 + (car_ob[1] - self.goal[1])**2 ))
+        
+        #return np.array(car_ob + self.goal, dtype=np.float32)
+        if(self.record):
+            self.logging_id = p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4,fileName='rec.mp4')
+        return arm_ob
+
+    def render(self):
+        pass
+
+    def close(self):
+        if(self.record):
+            p.stopStateLogging(self.logging_id)
+        p.disconnect(self.client)
+
+    def seed(self,seed=None):
+        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        return [seed]
