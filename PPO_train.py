@@ -14,14 +14,16 @@ import os
 model_dir = "models/PPO"
 logdir = "logs"
 
+date = 2905
+
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
 if not os.path.exists(logdir):
     os.makedirs(logdir)
 
-env = gym.make('PointToPoint-v0',mode='T', obs_mode = "CT")
-env = Monitor(env,'monitor_2205_1')
+env = gym.make('PointToRandomPoint-v0',mode='T', obs_mode = "T")
+env = Monitor(env,f'monitor/monitor_{date}_1')
 
 eval_callback = EvalCallback(env, best_model_save_path='./logs/',
                              log_path='./logs/', eval_freq=400000,
@@ -41,6 +43,6 @@ model = PPO('MlpPolicy',
 n_ep = 100000
 
 for i in range(1, 31):
-    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = "PPO")
-    model.save(model_dir + f"/2205_1/HA_PPOagent_2205_1_{i}_30")
+    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = f"PPO_{date}")
+    model.save(model_dir + f"/2205_1/HA_PPOagent_{date}_1_{i}_30")
 
