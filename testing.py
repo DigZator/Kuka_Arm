@@ -20,9 +20,9 @@ for i in range(100):
     time.sleep(0.25)
     print(action,rew) """
 
-env = gym.make('PointToPoint-v0',gui=True,mode='T', obs_mode = "CT")
+env = gym.make('PointToRandomPoint-v0',gui=True,mode='T', obs_mode = "T")
 #model = PPO('MlpPolicy',env,verbose=1,device='cuda')
-model = PPO.load('models/PPO/2205_1/HA_PPOagent_2205_1_20_30.zip')
+model = PPO.load('models/PPO/2205_1/HA_PPOagent_2905_1_14_30.zip')
 obs = env.reset()
 print('Observation:',obs)
 dones = False
@@ -31,7 +31,7 @@ rews = []
 count = 0
 for _ in range(5):
     obs = env.reset()
-    for _ in range(500):
+    for _ in range(8000):
         count += 1
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
@@ -41,4 +41,5 @@ for _ in range(5):
             break
     #print(count,end='\r')
 
-    print("Cumulative REWARD:",sum(rews))
+    print("REWARD:",sum(rews))
+    rews = []

@@ -23,10 +23,10 @@ if not os.path.exists(logdir):
     os.makedirs(logdir)
 
 env = gym.make('PointToRandomPoint-v0',mode='T', obs_mode = "T")
-env = Monitor(env,f'monitor/monitor_{date}_1')
+env = Monitor(env,f'monitor/monitor_{date}_3')
 
 eval_callback = EvalCallback(env, best_model_save_path='./logs/',
-                             log_path='./logs/', eval_freq=400000,
+                             log_path='./logs/', eval_freq=100000,
                              render=False)
 
 #model = SAC('MlpPolicy',env,verbose=1,device='cuda')
@@ -42,7 +42,6 @@ model = PPO('MlpPolicy',
 
 n_ep = 100000
 
-for i in range(1, 31):
-    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = f"PPO_{date}")
-    model.save(model_dir + f"/2205_1/HA_PPOagent_{date}_1_{i}_30")
-
+for i in range(1, 61):
+    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = f"PPO_{date}_3")
+    model.save(model_dir + f"/{date}_3/HA_PPOagent_{date}_3_{i}_60")
