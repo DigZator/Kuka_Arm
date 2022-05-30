@@ -47,6 +47,11 @@ class PointToRandomPoint(gym.Env):
                 low = np.array([-100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -10, -10, -10]),
                 high = np.array([100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  10,  10,  10])
             )
+        elif obs_mode == "JCT":
+            self.observation_space = gym.spaces.box.Box(    #change later
+                low = np.array([-100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -100,-10, -10, -10, -10, -10, -10, -10]),
+                high = np.array([100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  100, 10,  10,  10,  10,  10,  10,  10])
+            )
         elif obs_mode == "CT":
             self.observation_space = gym.spaces.box.Box(    #change later
                 low = np.array([-10,-10,-10,-10,-10,-10]),
@@ -107,6 +112,8 @@ class PointToRandomPoint(gym.Env):
             arm_ob = list(eeloc) + self.goal_position
         elif self.obs_mode == "T":
             arm_ob = arm_ob + self.goal_position
+        elif self.obs_mode == "JCT":
+            arm_ob = arm_ob + list(eeloc) + self.goal_position
 
             
         return arm_ob, reward, self.done, dict()
@@ -123,8 +130,8 @@ class PointToRandomPoint(gym.Env):
 
         # Set Random Goal   #this will not be used as position of goal is hardcoded in goal.py
         x = (np.random.random()-0.5)*1.2
-        y = (np.random.random()*0.7)
-        z = (np.random.random()-0.5)*1.2
+        y = (np.random.random()-0.5)*1.2
+        z = (np.random.random()*0.7)
         self.goal_position = [x, y, z]
         self.done = False
         Goal(self.client,self.goal_position)
@@ -132,11 +139,14 @@ class PointToRandomPoint(gym.Env):
         #self.goal_box = Goal(self.client, self.goal)
 
         arm_ob = self.arm.get_observation()
+        eeloc = p.getLinkState(self.arm.arm,6)[0]
         if self.obs_mode == "CT":
             eeloc = p.getLinkState(self.arm.arm,6)[0]
             arm_ob = list(eeloc) + self.goal_position
         elif self.obs_mode == "T":
             arm_ob = arm_ob + self.goal_position
+        elif self.obs_mode == "JCT":
+            arm_ob = arm_ob + list(eeloc) + self.goal_position
 
         #self.prev_dist_to_goal = math.sqrt(((car_ob[0] - self.goal[0])**2 + (car_ob[1] - self.goal[1])**2 ))
         

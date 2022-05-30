@@ -14,17 +14,19 @@ import os
 model_dir = "models/PPO"
 logdir = "logs"
 
+date = 3005
+
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
 if not os.path.exists(logdir):
     os.makedirs(logdir)
 
-env = gym.make('PointToPoint-v0',mode='T', T_sens = 180, obs_mode = "J")
-env = Monitor(env,'monitor_2205_2')
+env = gym.make('PointToRandomPoint-v0',mode='T', obs_mode = "JCT")
+env = Monitor(env,f'monitor/monitor_{date}_1')
 
 eval_callback = EvalCallback(env, best_model_save_path='./logs/',
-                             log_path='./logs/', eval_freq=400000,
+                             log_path='./logs/', eval_freq=100000,
                              render=False)
 
 #model = SAC('MlpPolicy',env,verbose=1,device='cuda')
@@ -40,7 +42,6 @@ model = PPO('MlpPolicy',
 
 n_ep = 100000
 
-for i in range(1, 31):
-    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = "PPO2")
-    model.save(model_dir + f"/2205_2/HA_PPOagent_2205_2_{i}_30")
-
+for i in range(1, 61):
+    model.learn(n_ep, eval_freq = 100, reset_num_timesteps = False, tb_log_name = f"PPO_{date}_1_JCT")
+    model.save(model_dir + f"/{date}_1_JCT/HA_PPOagent_{date}_1_{i}_60")
