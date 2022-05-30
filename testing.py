@@ -22,7 +22,7 @@ for i in range(100):
 
 env = gym.make('PointToRandomPoint-v0',gui=True,mode='T', obs_mode = "T")
 #model = PPO('MlpPolicy',env,verbose=1,device='cuda')
-model = PPO.load('models/PPO/2205_1/HA_PPOagent_2905_1_14_30.zip')
+model = PPO.load('models/PPO/2905_3/HA_PPOagent_2905_3_60_60.zip')
 obs = env.reset()
 print('Observation:',obs)
 dones = False
