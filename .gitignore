@@ -131,4 +131,4 @@ dmypy.json
 # Logs and Models
 /logs
 /models
-.monitor
+/monitor

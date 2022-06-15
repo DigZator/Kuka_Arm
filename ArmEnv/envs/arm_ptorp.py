@@ -103,6 +103,7 @@ class PointToRandomPoint(gym.Env):
         reward = -1*np.linalg.norm(np.array(eeloc)-np.array(self.goal_position))
         if ((-1*reward) < 0.0075):
             reward = 0
+        reward *= 0.01
 
 
         if self.timesteps > self.max_timesteps:
@@ -129,10 +130,16 @@ class PointToRandomPoint(gym.Env):
         
 
         # Set Random Goal   #this will not be used as position of goal is hardcoded in goal.py
-        x = (np.random.random()-0.5)*1.2
-        y = (np.random.random()-0.5)*1.2
-        z = (np.random.random()*0.7)
-        self.goal_position = [x, y, z]
+        x = np.random.random()
+        y = np.random.random()
+        z = np.random.random()
+        
+        # x, y, z = (x-0.5)*1.2, (y-0.5)*1.2, z*0.7
+        # self.goal_position = [x, y, z]
+
+        x, y, z = (x-0.5)/0.5, (y-0.5)/0.5, (z-0.5)/0.5
+        self.goal_position = [0.5+x, 0+y, 0.5+z]
+
         self.done = False
         Goal(self.client,self.goal_position)
 
