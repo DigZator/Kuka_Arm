@@ -20,9 +20,10 @@ for i in range(100):
     time.sleep(0.25)
     print(action,rew) """
 
-env = gym.make('PointToRandomPoint-v0',gui=True,mode='T', obs_mode = "JCT")
+env = gym.make('PointToRandomPoint-v0',gui=True, mode='T', obs_mode = "JCT", record = False)
 #model = PPO('MlpPolicy',env,verbose=1,device='cuda')
-model = PPO.load('models/PPO/1306_4_STEP/HA_PPOagent_1306_4_12_30.zip')
+model = PPO.load('models/PPO/1306_4_STEP/HA_PPOagent_1306_4_12_30.zip', env = env)
+#model = PPO.load('models/PPO/1706_1_STEP1/HA_PPOagent_1706_1_14_60.zip')
 obs = env.reset()
 print('Observation:',obs)
 dones = False

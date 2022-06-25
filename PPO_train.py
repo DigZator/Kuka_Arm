@@ -14,8 +14,8 @@ import os
 model_dir = "models/PPO"
 logdir = "logs"
 
-date = 1506
-m = 1
+date = 1706
+m = 2
 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
@@ -41,7 +41,7 @@ policy_kwargs = dict(activation_fn=th.nn.ReLU,net_arch=[512,512,256,128])
 #             device='cuda',
 #             tensorboard_log = logdir)
 
-model = PPO.load('models/PPO/1306_4_STEP/HA_PPOagent_1306_4_12_30.zip')
+model = PPO.load('models/PPO/1306_4_STEP/HA_PPOagent_1306_4_12_30.zip', env = env)
 
 n_ep = 100000
 

@@ -137,8 +137,10 @@ class PointToRandomPoint(gym.Env):
         # x, y, z = (x-0.5)*1.2, (y-0.5)*1.2, z*0.7
         # self.goal_position = [x, y, z]
 
-        x, y, z = (x-0.5)/0.5, (y-0.5)/0.5, (z-0.5)/0.5
-        self.goal_position = [0.5+x, 0+y, 0.5+z]
+        x, y, z = (x-0.5)/5, (y-0.5)/5, (z-0.5)/5
+        #self.goal_position = [0.5+x, 0+y, 0.5+z]
+
+        self.goal_position = [0.5, 0, 0.5]
 
         self.done = False
         Goal(self.client,self.goal_position)
